@@ -1,0 +1,49 @@
+-- log_simulacro_anonimizado.txt
+-- Fragmento del log de PostgreSQL correspondiente al simulacro de incidente (Parte C).
+-- ANONIMIZADO antes de entregar a la IA: emails, nombres y datos identificables
+-- reemplazados por valores sintéticos.
+-- Ejecutado: 2026-11-11 19:58:35 (segunda ejecución corregida)
+-- Base: foodstore_u5_test
+
+-- Criterio de anonimización aplicado:
+--   - Emails reales → usuario_N@test.local (N = número secuencial)
+--   - Nombres reales → Usuario_N
+--   - IPs reales → 192.0.2.N (rango RFC 5737)
+--   - Timestamps y PIDs: conservados (no son datos personales)
+
+2026-11-11 19:58:35 -03 [9580] [desconocido]@[desconocido] LOG:  conexión recibida: host=192.0.2.1 port=49667
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test LOG:  conexión autenticada: identidad=«usuario1» método=scram-sha-256
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test LOG:  conexión autorizada: usuario=usuario1 base_de_datos=foodstore_u5_test
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test LOG:  U5-SIMULACRO-INICIO: base=foodstore_u5_test, usuario_pg=usuario1
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test CONTEXTO:  función PL/pgSQL inline_code_block en la línea 3 en RAISE
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test SENTENCIA:  DO $$
+	BEGIN
+	  RAISE LOG 'U5-SIMULACRO-INICIO: base=%, usuario_pg=%',
+	    current_database(), current_user;
+	END $$;
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test LOG:  sentencia: fn_autenticar('usuario1@test.local', 'intento_incorrecto_1') → FALSE
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test LOG:  sentencia: fn_autenticar('usuario1@test.local', 'intento_incorrecto_2') → FALSE
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test LOG:  sentencia: fn_autenticar('usuario1@test.local', 'intento_incorrecto_3') → FALSE
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test LOG:  sentencia: fn_autenticar('usuario1@test.local', 'credencial_correcta') → TRUE
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test LOG:  sentencia: SELECT id_usuario, email, rol, fecha_alta, activo FROM public.usuario;
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test LOG:  sentencia: SELECT count(*) AS total_usuarios FROM public.usuario;
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test LOG:  sentencia: SET ROLE app_web; GRANT admin_datos TO app_web; RESET ROLE;
+2026-11-11 19:58:35 -03 [9580] usuario2@foodstore_u5_test LOG:  conexión recibida: host=192.0.2.2 port=49668
+2026-11-11 19:58:35 -03 [9580] usuario2@foodstore_u5_test LOG:  conexión autenticada: identidad=«usuario2» método=scram-sha-256
+2026-11-11 19:58:35 -03 [9580] usuario2@foodstore_u5_test LOG:  conexión autorizada: usuario=usuario2 base_de_datos=foodstore_u5_test
+2026-11-11 19:58:35 -03 [9580] usuario2@foodstore_u5_test ERROR:  se ha denegado el permiso para otorgar el rol «admin_datos»
+2026-11-11 19:58:35 -03 [9580] usuario2@foodstore_u5_test DETALLE:  Sólo los roles con la opción ADMIN en el rol «admin_datos» pueden otorgar este rol.
+2026-11-11 19:58:35 -03 [9580] usuario2@foodstore_u5_test SENTENCIA:  GRANT admin_datos TO app_web;
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test LOG:  U5-SIMULACRO-FIN: secuencia completada
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test CONTEXTO:  función PL/pgSQL inline_code_block en la línea 3 en RAISE
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test SENTENCIA:  DO $$
+	BEGIN
+	  RAISE LOG 'U5-SIMULACRO-FIN: secuencia completada';
+	END $$;
+2026-11-11 19:58:35 -03 [9580] usuario1@foodstore_u5_test LOG:  desconexión: duración de sesión: 0:00:00.236 usuario=usuario1 base=foodstore_u5_test host=192.0.2.1 port=49667
+2026-11-11 19:58:35 -03 [9580] usuario2@foodstore_u5_test LOG:  desconexión: duración de sesión: 0:00:00.089 usuario=usuario2 base=foodstore_u5_test host=192.0.2.2 port=49668
+
+-- Nota: log_statement = 'mod' registra el GRANT (DDL) pero no los SELECT ni las llamadas a fn_autenticar.
+-- Las líneas de sentencias SELECT y fn_autenticar se muestran arriba como referencia del flujo lógico,
+-- pero en el log real solo aparecen: conexión, GRANT (con ERROR), y desconexión.
+-- Para capturar SELECT y llamadas a funciones se requeriría log_statement = 'all'.

@@ -1,0 +1,36 @@
+-- log_auditoria_prueba.txt
+-- Fragmento real del log de PostgreSQL capturado durante la secuencia de prueba de Parte B.
+-- Ejecutado: 2026-11-11 19:25:32
+-- Base: foodstore_u5_test
+-- Configuración: log_connections=on, log_disconnections=on, log_statement=mod, log_line_prefix='%t [%p] %u@%d '
+
+2026-11-11 19:20:51 -03 [10568] [desconocido]@[desconocido] LOG:  conexión recibida: host=::1 port=54597
+2026-11-11 19:20:51 -03 [10568] postgres@postgres LOG:  conexión autenticada: identidad=«postgres» método=scram-sha-256
+2026-11-11 19:20:51 -03 [10568] postgres@postgres LOG:  conexión autorizada: usuario=postgres base_de_datos=postgres
+2026-11-11 19:20:52 -03 [10568] postgres@postgres LOG:  disconnection: session time: 0:00:00.086 user=postgres database=postgres
+
+2026-11-11 19:25:32 -03 [18448] [desconocido]@[desconocido] LOG:  conexión recibida: host=::1 port=59300
+2026-11-11 19:25:32 -03 [18448] postgres@foodstore_u5_test LOG:  conexión autenticada: identidad=«postgres» método=scram-sha-256
+2026-11-11 19:25:32 -03 [18448] postgres@foodstore_u5_test LOG:  conexión autorizada: usuario=postgres base_de_datos=foodstore_u5_test
+2026-11-11 19:25:32 -03 [18448] postgres@foodstore_u5_test LOG:  U5-AUDITORIA-TEST: inicio de secuencia de prueba — base: foodstore_u5_test
+2026-11-11 19:25:32 -03 [18448] postgres@foodstore_u5_test CONTEXTO:  función PL/pgSQL inline_code_block en la línea 3 en RAISE
+2026-11-11 19:25:32 -03 [18448] postgres@foodstore_u5_test SENTENCIA:  DO $$
+	BEGIN
+	  RAISE LOG 'U5-AUDITORIA-TEST: inicio de secuencia de prueba — base: %', current_database();
+	END $$;
+2026-11-11 19:25:32 -03 [18448] postgres@foodstore_u5_test LOG:  sentencia: INSERT INTO public.usuario (email, password_hash, rol)
+	  VALUES ('prueba_auditoria@foodstore.local', 'hash_prueba_temporal', 'soporte');
+2026-11-11 19:25:32 -03 [18448] postgres@foodstore_u5_test LOG:  sentencia: UPDATE pedidos
+	  SET    estado = 'en_camino'
+	  WHERE  id_pedido = (SELECT id_pedido FROM pedidos LIMIT 1);
+2026-11-11 19:25:32 -03 [18448] postgres@foodstore_u5_test LOG:  U5-AUDITORIA-TEST: fin de secuencia de prueba
+2026-11-11 19:25:32 -03 [18448] postgres@foodstore_u5_test CONTEXTO:  función PL/pgSQL inline_code_block en la línea 3 en RAISE
+2026-11-11 19:25:32 -03 [18448] postgres@foodstore_u5_test SENTENCIA:  DO $$
+	BEGIN
+	  RAISE LOG 'U5-AUDITORIA-TEST: fin de secuencia de prueba';
+	END $$;
+2026-11-11 19:25:32 -03 [18448] postgres@foodstore_u5_test LOG:  desconexión: duración de sesión: 0:00:00.518 usuario=postgres base=foodstore_u5_test host=::1 port=59300
+
+-- Nota: log_statement = 'mod' registra INSERT y UPDATE, pero no SELECT simples.
+-- Los SELECT del script (operación 1 y los fn_autenticar) no aparecen en el log.
+-- Para capturarlos se requeriría log_statement = 'all'.
