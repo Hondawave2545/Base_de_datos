@@ -1,0 +1,30 @@
+﻿== Prueba de concurrencia: A inserta y duerme 6 s con el lock; B intenta insertar y debe bloquear ==
+== Monitor pg_stat_activity (muestreo cada 600 ms) ==
+[0] 11:45:15.673
+2026-11-11 11:45:15.855758-03|13576|active|Lock|advisory|INSERT INTO public.detalle_pedido (id_detalle, id_pedido, id_producto, cantidad, precio_unitario, subtotal) VA
+2026-11-11 11:45:15.85577-03|20536|active|Timeout|PgSleep|SELECT pg_sleep(6);
+[1] 11:45:16.473
+2026-11-11 11:45:16.695418-03|13576|active|Lock|advisory|INSERT INTO public.detalle_pedido (id_detalle, id_pedido, id_producto, cantidad, precio_unitario, subtotal) VA
+2026-11-11 11:45:16.695428-03|20536|active|Timeout|PgSleep|SELECT pg_sleep(6);
+[2] 11:45:17.316
+2026-11-11 11:45:17.508606-03|13576|active|Lock|advisory|INSERT INTO public.detalle_pedido (id_detalle, id_pedido, id_producto, cantidad, precio_unitario, subtotal) VA
+2026-11-11 11:45:17.508618-03|20536|active|Timeout|PgSleep|SELECT pg_sleep(6);
+[3] 11:45:18.135
+2026-11-11 11:45:18.281616-03|13576|active|Lock|advisory|INSERT INTO public.detalle_pedido (id_detalle, id_pedido, id_producto, cantidad, precio_unitario, subtotal) VA
+2026-11-11 11:45:18.281632-03|20536|active|Timeout|PgSleep|SELECT pg_sleep(6);
+[4] 11:45:18.900
+2026-11-11 11:45:19.140285-03|13576|active|Lock|advisory|INSERT INTO public.detalle_pedido (id_detalle, id_pedido, id_producto, cantidad, precio_unitario, subtotal) VA
+2026-11-11 11:45:19.140297-03|20536|active|Timeout|PgSleep|SELECT pg_sleep(6);
+[5] 11:45:19.750
+2026-11-11 11:45:19.910319-03|13576|active|Lock|advisory|INSERT INTO public.detalle_pedido (id_detalle, id_pedido, id_producto, cantidad, precio_unitario, subtotal) VA
+2026-11-11 11:45:19.91033-03|20536|active|Timeout|PgSleep|SELECT pg_sleep(6);
+[6] 11:45:20.545
+2026-11-11 11:45:20.735531-03|13576|active|-|-|INSERT INTO public.detalle_pedido (id_detalle, id_pedido, id_producto, cantidad, precio_unitario, subtotal) VA
+[7] 11:45:21.350
+[8] 11:45:22.150
+[9] 11:45:23.059
+[10] 11:45:23.843
+[11] 11:45:24.663
+[12] 11:45:25.497
+[13] 11:45:26.383
+EXIT_A= EXIT_B=
