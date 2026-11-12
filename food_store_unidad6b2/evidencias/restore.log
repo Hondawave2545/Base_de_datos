@@ -1,0 +1,47 @@
+=== RESTAURACION Y VALIDACION - RESUMEN ===
+Fecha/hora inicio: 2026-11-11 23:28:41
+Base origen (respaldada): foodstore_tp
+Base destino (test): foodstore_restore_test
+Dump utilizado: foodstore_foodstore_tp_20261111_231510.dump (3.19 MB)
+Fecha dump: 2026-11-11 23:15:10
+
+--- PASO 1: Preparar base destino ---
+Conexiones terminadas: 0
+DROP DATABASE IF EXISTS: OK (NOTICE: no existe, omitiendo)
+CREATE DATABASE foodstore_restore_test OWNER postgres: OK
+
+--- PASO 2: Restaurar con pg_restore -j 4 ---
+Inicio: 2026-11-11 23:28:42
+Fin: 2026-11-11 23:29:04
+Duracion: ~22 segundos
+Resultado: EXITOSO
+Elementos restaurados: 50+ (tipos, funciones, tablas, secuencias, vistas, MV, indices, constraints, FKs, datos, ACLs)
+
+--- PASO 3: Validaciones post-restauracion ---
+Inicio: 2026-11-11 23:29:04
+Fin: 2026-11-11 23:29:19
+Duracion: ~15 segundos
+Ver detalles en: validation.txt
+
+--- METRICAS RPO / RTO ---
+RPO observado (antiguedad del respaldo): 0.23 horas (13.5 minutos)
+RTO observado (restauracion + validacion): 1.8 minutos (107 segundos)
+  - Restauracion: 22 segundos
+  - Validacion: 15 segundos
+  - Overhead (crear BD, terminaciones): ~70 segundos
+
+Tamaño dump: 3.19 MB
+Compresion: 93% (48 MB -> 3.19 MB)
+
+=== RESUMEN VALIDACIONES ===
+✅ 8 conteos de tablas: Idénticos a origen
+✅ 7 restricciones lógicas: 0 violaciones
+✅ 8 integridad referencial (FKs): 0 huérfanos
+✅ 5 vistas y MV: Pobladadas correctamente
+✅ 7 roles Unidad 5: Presentes
+⚠️ 2 funciones auth: No existían en origen (eran de foodstore_u5_test)
+
+=== CONCLUSIÓN ===
+Restauración exitosa. Base foodstore_restore_test es idéntica a foodstore_tp al momento del backup.
+RPO = 0.23h (objetivo ≤24h: ✅ CUMPLE)
+RTO = 1.8 min (objetivo ≤2h: ✅ CUMPLE)

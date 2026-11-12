@@ -1,0 +1,76 @@
+=== VALIDACIONES POST-RESTAURACION ===
+Base: foodstore_restore_test
+Timestamp: 2026-11-11 23:55:00
+
+--- 1. CONTEOS DE FILAS ---
+     tabla      | count
+----------------+--------
+ categorias     |      5
+ clientes       |   2000
+ detalle_pedido | 150000
+ empleados      |     12
+ pagos          |  50000
+ pedidos        |  50000
+ productos      |     40
+ sucursales     |      3
+(8 filas)
+
+
+--- 2. VALIDACIONES LOGICAS (esperado: 0) ---
+            check             | count
+------------------------------+-------
+ empleados dni duplicados     |     0
+ productos precio < 0         |     0
+ productos stock < 0          |     0
+ clientes email duplicados    |     0
+ pagos monto < 0              |     0
+ pedidos total < 0            |     0
+ detalle_pedido cantidad <= 0 |     0
+(7 filas)
+
+
+--- 3. INTEGRIDAD REFERENCIAL ---
+                     fk                      | huerfanos
+---------------------------------------------+-----------
+ empleados.id_sucursal -> sucursales         |         0
+ productos.id_categoria -> categorias        |         0
+ pedidos.id_empleado_repartidor -> empleados |         0
+ pedidos.id_sucursal -> sucursales           |         0
+ pedidos.id_cliente -> clientes              |         0
+ pagos.id_pedido -> pedidos                  |         0
+ detalle_pedido.id_producto -> productos     |         0
+ detalle_pedido.id_pedido -> pedidos         |         0
+(8 filas)
+
+
+--- 4. VISTAS Y MV ---
+            objeto            | count
+------------------------------+--------
+ mv_facturacion_categoria_mes |    120
+ v_productos_vigentes         |     38
+ v_clientes_publico           |   1920
+ v_pedidos_cliente            |  47537
+ v_detalle_pedido             | 150000
+(5 filas)
+
+
+--- 5. FUNCIONES AUTENTICACION ---
+ proname | prosecdef
+---------+-----------
+(0 filas)
+
+
+--- 6. ROLES ---
+      rolname      | rolcanlogin
+-------------------+-------------
+ admin_datos       | t
+ app_web           | t
+ rol_app_escritura | f
+ rol_app_lectura   | f
+ rol_auditoria     | f
+ rol_reportes      | f
+ rol_soporte       | f
+(7 filas)
+
+
+=== FIN VALIDACIONES ===

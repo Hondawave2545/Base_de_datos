@@ -1,0 +1,14 @@
+2026-11-11 23:28:41 [INFO] === INICIO RESTAURACION Y VALIDACION ===
+2026-11-11 23:28:41 [INFO] Timestamp: 20261111_232840
+2026-11-11 23:28:41 [INFO] Base origen (respaldada): foodstore_tp
+2026-11-11 23:28:41 [INFO] Base destino (test): foodstore_restore_test
+2026-11-11 23:28:41 [INFO] Log: C:\backups\foodstore\logs\restore_foodstore_restore_test_20261111_232840.log
+2026-11-11 23:28:41 [INFO] Resultados: C:\backups\foodstore\logs\validation_foodstore_restore_test_20261111_232840.txt
+2026-11-11 23:28:41 [INFO] Usando dump mas reciente: C:\backups\foodstore\foodstore_foodstore_tp_20261111_231510.dump
+2026-11-11 23:28:41 [INFO] Tamano dump: 3.19 MB
+2026-11-11 23:28:41 [INFO] Fecha dump: C:\backups\foodstore\foodstore_foodstore_tp_20261111_231510.dump.LastWriteTime
+2026-11-11 23:28:41 [INFO] --- Paso 1: Preparar base destino foodstore_restore_test ---
+2026-11-11 23:28:41 [INFO]  pg_terminate_backend 
+2026-11-11 23:28:41 [INFO] ----------------------
+2026-11-11 23:28:41 [INFO] (0 filas)
+2026-11-11 23:28:41 [INFO] 
