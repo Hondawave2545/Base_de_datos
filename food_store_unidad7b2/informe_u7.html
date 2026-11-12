@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe U7 - Food Store</title>
+<style>
+@page { size: A4; margin: 14mm 12mm; }
+body { font-family: Arial, Helvetica, sans-serif; font-size: 9.5pt; line-height: 1.25; color: #111; margin: 0; }
+h1 { font-size: 14pt; margin: 0 0 4px 0; }
+h2 { font-size: 10.5pt; margin: 8px 0 3px 0; border-bottom: 1px solid #444; padding-bottom: 1px; }
+h3 { font-size: 9.5pt; margin: 5px 0 2px 0; }
+p, ul, ol { margin: 2px 0 4px 0; }
+ul, ol { padding-left: 16px; }
+table { border-collapse: collapse; width: 100%; margin: 3px 0 5px 0; font-size: 8.6pt; }
+th, td { border: 1px solid #666; padding: 2px 4px; vertical-align: top; }
+th { background: #f0f0f0; }
+code, pre { font-family: Consolas, monospace; font-size: 8.4pt; }
+.small { font-size: 8.4pt; }
+.grid { display: block; }
+</style>
+</head>
+<body>
+<h1>Unidad 7 — NoSQL y nuevas formas de almacenamiento (Food Store)</h1>
+<p class="small"><b>Origen:</b> PostgreSQL 18.6 <code>foodstore_tp</code> (solo lectura). <b>Destino:</b> MongoDB 4.4.32 <code>foodstore_u7.pedidos</code> (shell <code>mongo.exe</code>). <b>Subconjunto:</b> 5 pedidos reales con líneas completas: IDs <b>1,4,5,6,18</b> (15 líneas). Sin PII ni credenciales en entrega; scripts separados: <code>migracion_u7.js</code>, <code>validacion_u7.js</code>, <code>consultas_mongodb.js</code>, <code>consultas_postgresql.sql</code>.</p>
+
+<h2>1. Modelo documental y migración</h2>
+<p><b>Tablas/claves PostgreSQL (verificadas):</b> <code>pedidos</code> PK <code>id_pedido</code> (FK <code>id_cliente -&gt; clientes</code>, <code>id_sucursal -&gt; sucursales</code>, <code>id_empleado_repartidor -&gt; empleados</code>, campos fecha/estado/tipo_entrega/total/datos_envio/activo); <code>detalle_pedido</code> PK <code>id_detalle</code> (FK <code>id_pedido -&gt; pedidos</code> ON DELETE CASCADE, <code>id_producto -&gt; productos</code>, UNIQUE (id_pedido,id_producto), cantidad/precio_unitario/subtotal&gt;0); <code>clientes</code> PK <code>id_cliente</code>; <code>productos</code> PK <code>id_producto</code>. Relaciones 1-N: clientes -&gt; pedidos, pedidos -&gt; detalle_pedido, productos -&gt; detalle_pedido.</p>
+<p><b>Esquema colección <code>foodstore_u7.pedidos</code> (1 doc = 1 pedido):</b> <code>_id=id_pedido</code> (conservado), <code>id_pedido</code>, <code>fecha_pedido</code>(ISODate), <code>estado</code>, <code>tipo_entrega</code>, <code>id_sucursal</code>, <code>id_empleado_repartidor</code>, <code>total</code>(NumberDecimal), <code>activo</code>, <code>datos_envio</code> (objeto embebido), <code>cliente</code> (objeto embebido: <code>id_cliente, cliente_ref, fecha_registro, activo</code> sin nombre/apellido/email/teléfono/dirección), <code>detalle[]</code> (arreglo embebido: <code>id_detalle,id_producto,producto_nombre,cantidad,precio_unitario,subtotal</code> NumberDecimal), <code>origen</code>.</p>
+<p><b>Migración:</b> precheck <code>count=0</code>, sin datos previos; <code>insertMany</code> 5 docs desde <code>foodstore_tp</code> (solo lectura). Resultado: <code>INSERT_OK insertedCount=5</code>, IDs [1,4,5,6,18]. Importes históricos como <code>NumberDecimal</code> (sin redondeo).</p>
+<p><b>Integridad conservada (2 reglas):</b> (1) Monetaria histórica: por línea <code>subtotal=cantidad*precio_unitario</code> y <code>total=Σ subtotales</code> (valores copiados, sin recalcular con precios actuales). (2) Referencial/completitud: IDs originales conservados, líneas reales completas, estado/tipo válidos, cantidades e importes &gt; 0, correspondencia con origen.</p>
+<p><b>Justificación embebido:</b> <code>detalle</code> embebido para leer pedido completo en una sola operación (acceso frecuente, cardinalidad acotada, sin <code>$lookup</code>); <code>cliente</code> como snapshot esencial sin PII; precios históricos en línea para trazabilidad.</p>
+
+<h2>2. Validación de migración (resultados reales)</h2>
+<table>
+<tr><th>Verificación</th><th>Resultado</th></tr>
+<tr><td>Conteo documentos</td><td>5 (OK)</td></tr>
+<tr><td>IDs</td><td>[1,4,5,6,18] (OK)</td></tr>
+<tr><td>Líneas por pedido</td><td>3,3,3,3,3 (OK, 15 líneas)</td></tr>
+<tr><td>subtotal = cantidad × precio_unitario (todas)</td><td>true (OK)</td></tr>
+<tr><td>total = Σ subtotales</td><td>true (1:39676.55, 4:10547.69, 5:24590.33, 6:21834.90, 18:23949.34)</td></tr>
+<tr><td>Duplicados</td><td>0 (OK)</td></tr>
+</table>
+<p><b>Comparación directa 15 líneas (PG vs Mongo):</b> campos <code>id_detalle,id_producto,cantidad,precio_unitario,subtotal</code> por pedido -&gt; <b>15/15 coinciden exactamente</b> (<code>diff_count=0</code>). Evidencia: <code>evidencias_t08b_lineas.txt</code>.</p>
+<p><b>Privacidad (verificada, no asumida):</b> consulta real comparó <code>datos_envio</code> en PG y Mongo (IDs 1,4,5,6,18): valores idénticos (<code>{"ciudad":"Mendoza","direccion":"Calle 1/4/5/6/18"}</code>), provienen de <code>foodstore_tp</code> con formato genérico de prueba/sintético, sin datos personales reales identificables en los campos verificados. En Mongo, <code>cliente</code> contiene solo <code>[activo,cliente_ref,fecha_registro,id_cliente]</code> (5/5, sin nombre/apellido/email/teléfono/dirección; <code>sin_pii=true</code>). No se modificó <code>foodstore_tp</code>. Evidencias: <code>evidencias_t08c_privacidad.txt</code>, <code>evidencias_privacidad_datos_envio.txt</code>.</p>
+
+<h2>3. Consultas y comparación PostgreSQL / MongoDB</h2>
+<p><b>MongoDB (a–d):</b> a) Todos (id,estado): (1,cancelado),(4,en_camino),(5,en_preparacion),(6,entregado),(18,pendiente). b) estado="entregado": [6]. c) producto <code>id_producto=8</code> en detalle: [4,5,6]. d) <code>total &gt; 20000</code> (umbral <b>20000</b>): [1,5,6,18]. <i>Justificación umbral:</i> separa ticket alto del subconjunto (4/5 lo superan, pedido 4=10547.69 queda fuera), verificando filtro numérico sobre <code>NumberDecimal</code> de forma no trivial.</p>
+<table>
+<tr><th>Consulta</th><th>Cant. PostgreSQL</th><th>IDs PostgreSQL</th><th>Cant. MongoDB</th><th>IDs MongoDB</th><th>Coinciden</th></tr>
+<tr><td>b) estado = entregado</td><td>1</td><td>{6}</td><td>1</td><td>[6]</td><td><b>Sí</b></td></tr>
+<tr><td>c) contiene id_producto=8</td><td>3</td><td>{4,5,6}</td><td>3</td><td>[4,5,6]</td><td><b>Sí</b></td></tr>
+</table>
+<p><b>Diferencias:</b> ninguna en cantidad ni IDs; no se requirió corrección de modelo/consultas. Consultas ejecutadas con <code>consultas_mongodb.js</code> y <code>consultas_postgresql.sql</code> (subconjunto, solo lectura).</p>
+
+<h2>4. Verificación de afirmaciones de IA y conclusión</h2>
+<p><b>Consulta IA (Kilo Code):</b> comparación PostgreSQL vs MongoDB para pedidos de Food Store considerando modelo relacional (claves/constraints), acceso frecuente a pedidos completos y coherencia de cantidades/precios históricos.</p>
+<p><b>Afirmación 1:</b> “Embeber detalle favorece leer el pedido completo en una sola consulta”. <b>Contraste:</b> Doc. oficial MongoDB (Embedded Data Models: relaciones “contains”/acceso conjunto, una lectura, atomicidad a nivel documento, https://www.mongodb.com/docs/manual/data-modeling/embedding/). <b>Laboratorio:</b> en <code>foodstore_u7.pedidos</code> las consultas a–d/lectura completa se resuelven con <code>find()</code> sin <code>$lookup</code>; en PostgreSQL requiere JOINs. <b>Confirmada.</b></p>
+<p><b>Afirmación 2:</b> “PostgreSQL garantiza mejor integridad referencial y de importes vía constraints/transacciones; en MongoDB la coherencia debe asegurarse en modelo/migración”. <b>Contraste:</b> Doc. oficial MongoDB (modelado embebido/relaciones: consistencia de referencias y campos calculados recae en diseño/aplicación; https://www.mongodb.com/docs/manual/data-modeling/embedding/). <b>Laboratorio:</b> PostgreSQL define PK/FK, UNIQUE y CHECKs (cantidad/precio/subtotal&gt;0, total&gt;=0); en MongoDB 4.4 se preservó con <code>NumberDecimal</code> y se validó <code>subtotal=cantidad*precio</code> y <code>total=Σ subtotales</code> (5/5 true, sin duplicados). <b>Confirmada.</b></p>
+
+<h3>Conclusión (≤200 palabras)</h3>
+<p>Para el subconjunto “pedidos y detalle” de Food Store conviene una <b>combinación</b>: mantener <b>PostgreSQL</b> como fuente transaccional autoritativa y usar <b>MongoDB</b> como vista documental para lectura de pedidos completos. (1) <b>Acceso:</b> el pedido se consulta como unidad con sus líneas; el modelo embebido permite recuperarlo en una sola operación <code>find()</code> sin joins, coherente con la guía de embedding de MongoDB y verificado en las consultas a–d. (2) <b>Integridad y coherencia histórica:</b> PostgreSQL impone FKs, CHECKs y unicidad que protegen cantidades, precios y totales en origen; en MongoDB 4.4 la consistencia (<code>NumberDecimal</code>, <code>subtotal=cantidad*precio_unitario</code>, <code>total=Σ subtotales</code>) debe garantizarse en migración/validación, comprobado en los 5 documentos (<code>total_match_all</code> y <code>lineas_calc_all</code> verdaderos, 15/15 líneas exactas, sin duplicados). (3) <b>Trazabilidad:</b> conservar <code>_id=id_pedido</code> e IDs originales permitió verificar equivalencia exacta entre motores (b: {6}; c: {4,5,6}). Así, MongoDB optimiza lecturas documentales sin reemplazar las garantías relacionales del sistema principal.</p>
+
+<p class="small"><b>Archivos en <code>food_store_unidad7b2/</code>:</b> <code>informe_u7.pdf/.md</code>, <code>README.md</code>, <code>migracion_u7.js</code>, <code>validacion_u7.js</code>, <code>consultas_mongodb.js</code>, <code>consultas_postgresql.sql</code> y evidencias (.txt). Sin modificar <code>foodstore_tp</code>, otras bases MongoDB ni unidades anteriores. Sin commit/push.</p>
+</body>
+</html>

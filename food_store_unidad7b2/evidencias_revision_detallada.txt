@@ -1,0 +1,18 @@
+﻿--- T08a FIX: PG totales/fechas/estado ---
+1|cancelado|2026-03-15 02:29:53.916441-03|39676.55
+4|en_camino|2025-06-25 05:59:11.2038-03|10547.69
+5|en_preparacion|2025-03-30 10:24:57.080331-03|24590.33
+6|entregado|2026-07-24 00:20:40.753825-03|21834.90
+18|pendiente|2026-06-20 20:19:27.561011-03|23949.34
+T08a FIX: Mongo totales/fechas/estado ---
+uncaught exception: SyntaxError: expected expression, got '|' :
+@(shell eval):1:130
+exiting with code -4
+--- T08d FIX: agregacion integridad ---
+uncaught exception: ReferenceError: $detalle is not defined :
+@(shell eval):1:87
+exiting with code -4
+--- T08e FIX: lista DBs Mongo ---
+uncaught exception: ReferenceError: listDatabases is not defined :
+@(shell eval):1:1
+exiting with code -4

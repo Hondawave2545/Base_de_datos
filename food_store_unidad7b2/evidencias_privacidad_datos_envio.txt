@@ -1,0 +1,27 @@
+=== EVIDENCIA PRIVACIDAD datos_envio (revision final) ===
+Timestamp: 2026-11-12 12:04:00-03:00
+Objetivo: Verificar si datos_envio.direccion (y ciudad) son ficticios de prueba o provienen de direcciones reales en PostgreSQL, sin afirmar PII sin comprobar.
+Procedimiento (solo lectura): comparar datos_envio por id_pedido en PostgreSQL (foodstore_tp) y en MongoDB (foodstore_u7).
+
+PostgreSQL (origen, foodstore_tp, consulta: SELECT id_pedido, datos_envio->>'direccion', datos_envio->>'ciudad' WHERE id_pedido IN (1,4,5,6,18)):
+1|Calle 1|Mendoza
+4|Calle 4|Mendoza
+5|Calle 5|Mendoza
+6|Calle 6|Mendoza
+18|Calle 18|Mendoza
+
+MongoDB (foodstore_u7.pedidos, find proyectando datos_envio):
+1|Mendoza|Calle 1
+4|Mendoza|Calle 4
+5|Mendoza|Calle 5
+6|Mendoza|Calle 6
+18|Mendoza|Calle 18
+
+Comparacion:
+- Valores identicos PG vs Mongo para los 5 pedidos: SI (migracion conservo estructura/valores).
+- Procedencia: provienen de PostgreSQL foodstore_tp (no fueron inventados en la migracion).
+- Naturaleza observada: direcciones genericas tipo "Calle <id_pedido>" y ciudad "Mendoza" (formato de dato de prueba/sintetico). No se observan nombres de personas, telefonos, emails ni direcciones postales reales identificables en los campos verificados.
+- Accion sobre datos: NO se modifica foodstore_tp (solo lectura). Los documentos en foodstore_u7 mantienen los valores de origen verificados; no se detectaron direcciones reales identificables que requirieran anonimizacion adicional.
+- Evidencia previa complementaria: evidencias_t08c_privacidad.txt (cliente sin nombre/apellido/email/telefono/direccion_entrega; sin_pii=true en claves de cliente).
+
+Resultado: PASS (verificacion realizada; sin evidencia de datos personales reales identificables en datos_envio de los 5 pedidos; no se realizaron modificaciones destructivas).

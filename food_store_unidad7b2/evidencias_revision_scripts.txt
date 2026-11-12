@@ -1,0 +1,86 @@
+﻿--- T09: verificacion contenido scripts y consigna ---
+T09a migracion tiene precheck y abort si hay datos
+  var count = existing.indexOf("pedidos") >= 0 ? db.pedidos.count() : 0;
+  print("PRECHECK: colecciones=" + tojson(existing) + " pedidos.count=" + count);
+    throw new Error("ABORT: la coleccion pedidos ya tiene datos (" + count + "). No se modifica.");
+      _id: 1,
+      total: NumberDecimal("39676.55"),
+        { id_detalle: 1, id_producto: 3, producto_nombre: "Producto 3", cantidad: 2, precio_unitario: NumberDecimal("4810.70"), subtotal: NumberDecimal("9621.40") },
+        { id_detalle: 2, id_producto: 4, producto_nombre: "Producto 4", cantidad: 3, precio_unitario: NumberDecimal("4366.49"), subtotal: NumberDecimal("13099.47") },
+        { id_detalle: 3, id_producto: 5, producto_nombre: "Producto 5", cantidad: 4, precio_unitario: NumberDecimal("4238.92"), subtotal: NumberDecimal("16955.68") }
+      _id: 4,
+      total: NumberDecimal("10547.69"),
+        { id_detalle: 10, id_producto: 6, producto_nombre: "Producto 6", cantidad: 1, precio_unitario: NumberDecimal("4209.08"), subtotal: NumberDecimal("4209.08") },
+        { id_detalle: 11, id_producto: 7, producto_nombre: "Producto 7", cantidad: 1, precio_unitario: NumberDecimal("2816.98"), subtotal: NumberDecimal("2816.98") },
+        { id_detalle: 12, id_producto: 8, producto_nombre: "Producto 8", cantidad: 1, precio_unitario: NumberDecimal("3521.63"), subtotal: NumberDecimal("3521.63") }
+      _id: 5,
+      total: NumberDecimal("24590.33"),
+        { id_detalle: 13, id_producto: 7, producto_nombre: "Producto 7", cantidad: 2, precio_unitario: NumberDecimal("2816.98"), subtotal: NumberDecimal("5633.96") },
+        { id_detalle: 14, id_producto: 8, producto_nombre: "Producto 8", cantidad: 3, precio_unitario: NumberDecimal("3521.63"), subtotal: NumberDecimal("10564.89") },
+        { id_detalle: 15, id_producto: 9, producto_nombre: "Producto 9", cantidad: 4, precio_unitario: NumberDecimal("2097.87"), subtotal: NumberDecimal("8391.48") }
+      _id: 6,
+      total: NumberDecimal("21834.90"),
+        { id_detalle: 16, id_producto: 8, producto_nombre: "Producto 8", cantidad: 3, precio_unitario: NumberDecimal("3521.63"), subtotal: NumberDecimal("10564.89") },
+        { id_detalle: 17, id_producto: 9, producto_nombre: "Producto 9", cantidad: 1, precio_unitario: NumberDecimal("2097.87"), subtotal: NumberDecimal("2097.87") },
+        { id_detalle: 18, id_producto: 10, producto_nombre: "Producto 10", cantidad: 3, precio_unitario: NumberDecimal("3057.38"), subtotal: NumberDecimal("9172.14") }
+      _id: 18,
+      total: NumberDecimal("23949.34"),
+        { id_detalle: 52, id_producto: 20, producto_nombre: "Producto 20", cantidad: 3, precio_unitario: NumberDecimal("2861.39"), subtotal: NumberDecimal("8584.17") },
+        { id_detalle: 53, id_producto: 21, producto_nombre: "Producto 21", cantidad: 1, precio_unitario: NumberDecimal("2931.19"), subtotal: NumberDecimal("2931.19") },
+        { id_detalle: 54, id_producto: 22, producto_nombre: "Producto 22", cantidad: 3, precio_unitario: NumberDecimal("4144.66"), subtotal: NumberDecimal("12433.98") }
+  var res = db.pedidos.insertMany(docs);
+T09b consultas_mongodb incluye a,b,c,d y umbral justificado
+print("=== a) Todos los pedidos (id y estado) ===");
+print("\n=== b) Pedidos filtrados por estado 'entregado' ===");
+  { estado: "entregado" },
+print("\n=== c) Pedidos que contienen producto id_producto=8 en detalle ===");
+  { "detalle.id_producto": 8 },
+print("\n=== c-alt) Pedidos con producto id_producto=8 (todas las lineas) ===");
+  { "detalle.id_producto": 8 },
+print("\n=== d) Pedidos con total > 20000 (umbral=20000) ===");
+  { total: { $gt: NumberDecimal("20000") } },
+print("\n// Justificacion umbral d): 20000 separa pedidos de ticket alto del subconjunto migrado.");
+print("// En los 5 pedidos seleccionados, 4 superan 20000 (1,5,6,18) y 1 queda por debajo (4=10547.69),");
+T09c consultas_postgresql incluye b,c y subconjunto
+WHERE p.estado = 'entregado'
+  AND p.id_pedido IN (1,4,5,6,18)
+SELECT COUNT(*) AS cantidad, array_agg(id_pedido ORDER BY id_pedido) AS ids
+WHERE estado = 'entregado' AND id_pedido IN (1,4,5,6,18);
+WHERE dp.id_producto = 8
+  AND p.id_pedido IN (1,4,5,6,18)
+SELECT dp.id_pedido, dp.id_detalle, dp.id_producto, dp.cantidad, dp.precio_unitario, dp.subtotal
+WHERE dp.id_producto = 8
+  AND dp.id_pedido IN (1,4,5,6,18)
+\echo '=== c-global referencia: conteo e IDs con producto 8 en subconjunto ==='
+SELECT COUNT(DISTINCT p.id_pedido) AS cantidad, array_agg(DISTINCT p.id_pedido ORDER BY p.id_pedido) AS ids
+WHERE dp.id_producto = 8
+  AND p.id_pedido IN (1,4,5,6,18);
+\echo '=== Datos origen para validacion (solo IDs seleccionados) ==='
+WHERE p.id_pedido IN (1,4,5,6,18)
+       dp.cantidad, dp.precio_unitario, dp.subtotal
+WHERE dp.id_pedido IN (1,4,5,6,18)
+T09d validacion_u7 checks
+  var count = db.pedidos.count();
+  print("COUNT=" + count);
+  print("IDS_MATCH=" + idsMatch);
+  print("TODOS_3_LINEAS=" + all3);
+      lineas_ok: {$allElementsTrue: {$map: {
+      total_match: {$eq:["$total","$suma_subtotales"]},
+      lineas_ok:1,
+  print("DUPLICADOS=" + tojson(dups));
+  var resumen = {
+    count_ok: count === 5,
+    lineas_ok: all3,
+    total_match_all: checks.every(function(d){return d.total_match;}),
+    lineas_calc_all: checks.every(function(d){return d.lineas_ok;}),
+    sin_duplicados: dups.length === 0
+  print("RESUMEN=" + tojson(resumen));
+--- T10: idempotencia segura de migracion (debe abortar, no modificar) ---
+PRECHECK: colecciones=[ "pedidos" ] pedidos.count=5
+uncaught exception: Error: ABORT: la coleccion pedidos ya tiene datos (5). No se modifica. :
+@.\migracion_u7.js:15:11
+@.\migracion_u7.js:5:2
+failed to load: .\migracion_u7.js
+exiting with code -3
+EXITCODE=-3
+COUNT_AFTER=5

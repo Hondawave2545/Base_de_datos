@@ -1,0 +1,47 @@
+﻿--- T08a FIX2: PG ---
+1|cancelado|2026-03-15THH24:29:53.916Z|39676.55
+4|en_camino|2025-06-25THH24:59:11.203Z|10547.69
+5|en_preparacion|2025-03-30THH24:24:57.080Z|24590.33
+6|entregado|2026-07-24THH24:20:40.753Z|21834.90
+18|pendiente|2026-06-20THH24:19:27.561Z|23949.34
+--- T08a FIX2: Mongo ---
+1|cancelado|2026-03-15T05:29:53.916Z|NumberDecimal("39676.55")
+4|en_camino|2025-06-25T08:59:11.204Z|NumberDecimal("10547.69")
+5|en_preparacion|2025-03-30T13:24:57.080Z|NumberDecimal("24590.33")
+6|entregado|2026-07-24T03:20:40.754Z|NumberDecimal("21834.90")
+18|pendiente|2026-06-20T23:19:27.561Z|NumberDecimal("23949.34")
+--- T08d FIX2: integridad agregacion ---
+[
+	{
+		"_id" : 1,
+		"id_pedido" : 1,
+		"lineas_ok" : true,
+		"total_ok" : true
+	},
+	{
+		"_id" : 4,
+		"id_pedido" : 4,
+		"lineas_ok" : true,
+		"total_ok" : true
+	},
+	{
+		"_id" : 5,
+		"id_pedido" : 5,
+		"lineas_ok" : true,
+		"total_ok" : true
+	},
+	{
+		"_id" : 6,
+		"id_pedido" : 6,
+		"lineas_ok" : true,
+		"total_ok" : true
+	},
+	{
+		"_id" : 18,
+		"id_pedido" : 18,
+		"lineas_ok" : true,
+		"total_ok" : true
+	}
+]
+--- T08e FIX2: DBs ---
+[ "admin", "config", "foodstore_u7", "local" ]

@@ -1,0 +1,64 @@
+﻿=== EVIDENCIA T08b - Comparacion directa 15 lineas (PG vs Mongo) ===
+Timestamp: 2026-11-12 11:56:08-03:00
+Objetivo: Verificar individualmente id_detalle, id_producto, cantidad, precio_unitario, subtotal en 5 pedidos.
+Comando PG: psql -d foodstore_tp -t -A -F '|' -c "SELECT id_pedido,id_detalle,id_producto,cantidad,precio_unitario,subtotal FROM detalle_pedido WHERE id_pedido IN (1,4,5,6,18) ORDER BY id_pedido,id_detalle;"
+Comando Mongo: mongo.exe --quiet foodstore_u7 (script JS: forEach detalle -> print join '|', valores toString() normalizados)
+Esperado: 15 lineas, todos los campos iguales a PostgreSQL.
+Obtenido: pg_count=15; mongo_count=15; diff_count=0; all_15_match=True
+Estado: PASS
+--- CAMPO A CAMPO (normalizado) ---
+
+id_pedido id_detalle id_producto cantidad_pg cantidad_mg cantidad_ok precio_pg precio_mg precio_ok subtotal_pg
+--------- ---------- ----------- ----------- ----------- ----------- --------- --------- --------- -----------
+1         1          3           2           2                  True 4810.70   4810.70        True 9621.40    
+1         2          4           3           3                  True 4366.49   4366.49        True 13099.47   
+1         3          5           4           4                  True 4238.92   4238.92        True 16955.68   
+4         10         6           1           1                  True 4209.08   4209.08        True 4209.08    
+4         11         7           1           1                  True 2816.98   2816.98        True 2816.98    
+4         12         8           1           1                  True 3521.63   3521.63        True 3521.63    
+5         13         7           2           2                  True 2816.98   2816.98        True 5633.96    
+5         14         8           3           3                  True 3521.63   3521.63        True 10564.89   
+5         15         9           4           4                  True 2097.87   2097.87        True 8391.48    
+6         16         8           3           3                  True 3521.63   3521.63        True 10564.89   
+6         17         9           1           1                  True 2097.87   2097.87        True 2097.87    
+6         18         10          3           3                  True 3057.38   3057.38        True 9172.14    
+18        52         20          3           3                  True 2861.39   2861.39        True 8584.17    
+18        53         21          1           1                  True 2931.19   2931.19        True 2931.19    
+18        54         22          3           3                  True 4144.66   4144.66        True 12433.98   
+
+
+
+--- PG (valores) ---
+1|1|3|2|4810.70|9621.40
+1|2|4|3|4366.49|13099.47
+1|3|5|4|4238.92|16955.68
+4|10|6|1|4209.08|4209.08
+4|11|7|1|2816.98|2816.98
+4|12|8|1|3521.63|3521.63
+5|13|7|2|2816.98|5633.96
+5|14|8|3|3521.63|10564.89
+5|15|9|4|2097.87|8391.48
+6|16|8|3|3521.63|10564.89
+6|17|9|1|2097.87|2097.87
+6|18|10|3|3057.38|9172.14
+18|52|20|3|2861.39|8584.17
+18|53|21|1|2931.19|2931.19
+18|54|22|3|4144.66|12433.98
+--- Mongo (normalizado) ---
+1|1|3|2|4810.70|9621.40
+1|2|4|3|4366.49|13099.47
+1|3|5|4|4238.92|16955.68
+4|10|6|1|4209.08|4209.08
+4|11|7|1|2816.98|2816.98
+4|12|8|1|3521.63|3521.63
+5|13|7|2|2816.98|5633.96
+5|14|8|3|3521.63|10564.89
+5|15|9|4|2097.87|8391.48
+6|16|8|3|3521.63|10564.89
+6|17|9|1|2097.87|2097.87
+6|18|10|3|3057.38|9172.14
+18|52|20|3|2861.39|8584.17
+18|53|21|1|2931.19|2931.19
+18|54|22|3|4144.66|12433.98
+--- DIFF (normalizado) ---
+none

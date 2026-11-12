@@ -1,0 +1,92 @@
+﻿=== EVIDENCIA T08c - datos_envio y privacidad cliente (consulta real MongoDB) ===
+Timestamp: 2026-11-12 11:57:25-03:00
+Comando: mongo.exe --quiet foodstore_u7 (consulta find proyectando datos_envio y cliente; verificacion de claves)
+Objetivo: comprobar datos_envio conservado y cliente solo con campos esenciales (id_cliente, cliente_ref, fecha_registro, activo) sin nombre/apellido/email/telefono/direccion.
+Esperado: 5 docs, datos_envio_presente=true, cliente_keys=[activo,cliente_ref,fecha_registro,id_cliente], campos_prohibidos=[], sin_pii=true
+Obtenido (consulta real):
+{
+	"id_pedido" : 1,
+	"datos_envio_presente" : true,
+	"datos_envio" : {
+		"ciudad" : "Mendoza",
+		"direccion" : "Calle 1"
+	},
+	"cliente_keys" : [
+		"activo",
+		"cliente_ref",
+		"fecha_registro",
+		"id_cliente"
+	],
+	"cliente_solo_campos_esperados" : true,
+	"campos_prohibidos_encontrados" : [ ],
+	"sin_pii" : true
+}
+{
+	"id_pedido" : 4,
+	"datos_envio_presente" : true,
+	"datos_envio" : {
+		"ciudad" : "Mendoza",
+		"direccion" : "Calle 4"
+	},
+	"cliente_keys" : [
+		"activo",
+		"cliente_ref",
+		"fecha_registro",
+		"id_cliente"
+	],
+	"cliente_solo_campos_esperados" : true,
+	"campos_prohibidos_encontrados" : [ ],
+	"sin_pii" : true
+}
+{
+	"id_pedido" : 5,
+	"datos_envio_presente" : true,
+	"datos_envio" : {
+		"ciudad" : "Mendoza",
+		"direccion" : "Calle 5"
+	},
+	"cliente_keys" : [
+		"activo",
+		"cliente_ref",
+		"fecha_registro",
+		"id_cliente"
+	],
+	"cliente_solo_campos_esperados" : true,
+	"campos_prohibidos_encontrados" : [ ],
+	"sin_pii" : true
+}
+{
+	"id_pedido" : 6,
+	"datos_envio_presente" : true,
+	"datos_envio" : {
+		"ciudad" : "Mendoza",
+		"direccion" : "Calle 6"
+	},
+	"cliente_keys" : [
+		"activo",
+		"cliente_ref",
+		"fecha_registro",
+		"id_cliente"
+	],
+	"cliente_solo_campos_esperados" : true,
+	"campos_prohibidos_encontrados" : [ ],
+	"sin_pii" : true
+}
+{
+	"id_pedido" : 18,
+	"datos_envio_presente" : true,
+	"datos_envio" : {
+		"ciudad" : "Mendoza",
+		"direccion" : "Calle 18"
+	},
+	"cliente_keys" : [
+		"activo",
+		"cliente_ref",
+		"fecha_registro",
+		"id_cliente"
+	],
+	"cliente_solo_campos_esperados" : true,
+	"campos_prohibidos_encontrados" : [ ],
+	"sin_pii" : true
+}
+Estado: PASS
